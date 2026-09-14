@@ -221,5 +221,7 @@
         @if (Route::has('login'))
             <div class="h-14.5 hidden lg:block"></div>
         @endif
+        <h1>Hafish Athallah</h1>
+        <h2>H1H024052</h2>
     </body>
 </html>
