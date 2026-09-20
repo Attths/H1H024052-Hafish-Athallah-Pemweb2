@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Mahasiswa;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MahasiswaWebController extends Controller
@@ -11,18 +11,18 @@ class MahasiswaWebController extends Controller
     /**
      * Display a listing of the resource.
      */
-   public function index()
-{
-    DB::listen(function ($kueri) {
-        logger($kueri->sql);
-    });
+    public function index()
+    {
+        DB::listen(function ($kueri) {
+            logger($kueri->sql);
+        });
 
         $daftarMahasiswa = Mahasiswa::with('programStudi')
             ->orderBy('nama')
             ->paginate(10);
-        return view('mahasiswa.data', ['daftarMahasiswa' =>$daftarMahasiswa]);
-    }
 
+        return view('mahasiswa.data', ['daftarMahasiswa' => $daftarMahasiswa]);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -44,11 +44,11 @@ class MahasiswaWebController extends Controller
             'email' => ['required', 'email', 'unique:mahasiswas,email'],
             'angkatan' => ['required', 'integer', 'min:2000'],
         ]);
-        
+
         Mahasiswa::create($data);
 
         return redirect()->route('mahasiswa.data')
-        ->with('sukses', 'Data Mahasiswa Berhasil Disimpan');
+            ->with('sukses', 'Data Mahasiswa Berhasil Disimpan');
     }
 
     /**
@@ -56,7 +56,25 @@ class MahasiswaWebController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $mahasiswa = Mahasiswa::with(['programStudi', 'matakuliahs'])->findOrFail($id);
+
+        return view('mahasiswa.detail', compact('mahasiswa'));
+    }
+
+    /**
+     * Menampilkan 10 mahasiswa dengan IPK tertinggi di Program Studi Teknik Komputer.
+     */
+    public function topTeknikKomputer()
+    {
+        $mahasiswas = Mahasiswa::with('programStudi')
+            ->whereHas('programStudi', function ($query) {
+                $query->where('nama', 'Teknik Komputer');
+            })
+            ->orderBy('ipk', 'desc')
+            ->take(10)
+            ->get();
+
+        return view('mahasiswa.top_tk', compact('mahasiswas'));
     }
 
     /**
